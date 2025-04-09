@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+model Level {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  levelNumber   Int            @unique
+  parkingSpots  ParkingSpot[]  @relation("LevelParkingSpots")
+  parkingLotId  String         @db.ObjectId 
+  parkingLot    ParkingLot     @relation("ParkingLotLevels", fields: [parkingLotId], references: [id]) 
+}
+
+model ParkingLot {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  location String
+  levels   Level[]  @relation("ParkingLotLevels")
+}
+
+model ParkingSpot {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  spotID     String   @unique
+  size       String
+  isOccupied Boolean  @default(false)
+  vehicleId  String?  @unique @db.ObjectId
+  vehicle    Vehicle? @relation("SpotVehicle", fields: [vehicleId], references: [id])
+  levelId    String   @db.ObjectId
+  level      Level    @relation("LevelParkingSpots", fields: [levelId], references: [id])
+}
+
+model Vehicle {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  licenseplate String
+  size         String
+  type         String
+  parkingSpot  ParkingSpot? @relation("SpotVehicle")
+}
