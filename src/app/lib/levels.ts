@@ -16,14 +16,21 @@ export class Level {
   }
 
   async create(parkingLotId: string) {
-    const level = await prisma.level.create({
-      data: {
-        levelNumber: this.levelNumber,
-        parkingLotId: this.parkingLotId,
-      },
-    });
-    this.id = level.id;
-    return level;
+    try {
+      const level = await prisma.level.create({
+        data: {
+          levelNumber: this.levelNumber,
+          parkingLotId: this.parkingLotId,
+        },
+      });
+      this.id = level.id;
+      return level;
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new Error(`Level number ${this.levelNumber} already exists in this parking lot`);
+      }
+      throw error;
+    }
   }
 
   async findAvailableSpot(vehicle: any) {
@@ -34,6 +41,7 @@ export class Level {
         size: vehicle.size,
       },
     });
+    console.log("Available spot:")
     console.log(availableSpot)
     return availableSpot ? new ParkingSpot(availableSpot.spotID, availableSpot.size, this.id!, availableSpot.id) : null;
   }

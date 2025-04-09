@@ -27,11 +27,12 @@ model ParkingSpot {
   spotID     String   @unique
   size       String
   isOccupied Boolean  @default(false)
-  vehicleId  String?  @unique @db.ObjectId
-  vehicle    Vehicle? @relation("SpotVehicle", fields: [vehicleId], references: [id])
+  vehicleId String?   @unique @db.ObjectId
+  vehicle   Vehicle? @relation("SpotVehicle", fields: [vehicleId], references: [id])
   levelId    String   @db.ObjectId
   level      Level    @relation("LevelParkingSpots", fields: [levelId], references: [id])
 }
+
 
 model Vehicle {
   id           String       @id @default(auto()) @map("_id") @db.ObjectId

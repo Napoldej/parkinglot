@@ -1,4 +1,7 @@
 import { PrismaClient } from "@prisma/client";
+import { randomInt } from "crypto";
+import { ObjectId } from "mongodb";
+
 
 const prisma = new PrismaClient();
 export class ParkingSpot {
@@ -6,7 +9,7 @@ export class ParkingSpot {
   spotID: string;
   size: string;
   isOccupied: boolean;
-  vehicle: any | null;
+  vehicle: any | undefined;
   levelId: string;
 
   constructor(spotID: string, size: string, levelId: string, id?: string) {
@@ -14,7 +17,7 @@ export class ParkingSpot {
     this.spotID = spotID;
     this.size = size;
     this.isOccupied = false;
-    this.vehicle = null;
+    this.vehicle =  new ObjectId();
     this.levelId = levelId;
   }
 
@@ -24,6 +27,8 @@ export class ParkingSpot {
         spotID: this.spotID,
         size: this.size,
         levelId: this.levelId,
+        isOccupied: false,
+        vehicleId: this.vehicle
       },
     });
     this.id = spot.id;
@@ -56,14 +61,17 @@ export class ParkingSpot {
   }
 
   async removeVehicle() {
+    const tempID = new ObjectId().toString();
     await prisma.parkingSpot.update({
       where: { id: this.id },
-      data: { isOccupied: false, vehicleId: null },
+      data: { isOccupied: false, vehicleId: tempID },
     });
     this.isOccupied = false;
-    this.vehicle = null;
+    this.vehicle = tempID;
     return true;
   }
 }
 
 export default ParkingSpot;
+
+

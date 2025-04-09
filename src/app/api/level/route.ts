@@ -24,5 +24,5 @@ export async function POST(request: Request){
     const { levelNumber, parkingLotId } = await request.json();
     const level = new Level(levelNumber, parkingLotId);
     const created = await level.create(parkingLotId);
-    Response.json(created, {status: 200});
+    return Response.json(created, {status: 200});
 }

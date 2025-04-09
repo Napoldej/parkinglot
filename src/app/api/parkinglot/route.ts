@@ -13,7 +13,15 @@ export async function POST(req: Request) {
 export async function GET(req: Request){
     const parkingLots = await prisma.parkingLot.findMany({
         include: {
-            levels: true
+            levels: {
+                include: {
+                    parkingSpots: {
+                        include: {
+                            vehicle: true
+                        }
+                    }
+                }
+            }
         }
     })
     return Response.json(parkingLots, {status : 200})

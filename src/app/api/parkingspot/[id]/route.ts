@@ -2,14 +2,48 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function DELETE(req : Request, {params}: {params: {id: string}}) {
-    const id = params.id
-    const deleted = await prisma.parkingSpot.delete({
-        where:{
-            id: id
+export async function DELETE(req: Request, props: {params: Promise<{id: string}>}) {
+    try {
+        const params = await props.params;
+        const id = params.id;
+
+        const parkingSpot = await prisma.parkingSpot.findUnique({
+            where: { id: id },
+            include: {
+                vehicle: true
+            }
+        });
+
+        if (!parkingSpot) {
+            return Response.json({ error: "Parking spot not found" }, { status: 404 });
         }
-    })
-    return Response.json(`Deleted: ${JSON.stringify(id)}`, {status: 200})
+
+        if (parkingSpot.vehicle) {
+            await prisma.vehicle.update({
+                where: { id: parkingSpot.vehicle.id },
+                data: {
+                    parkingSpot: {
+                        disconnect: true
+                    }
+                }
+            });
+        }
+
+        const deleted = await prisma.parkingSpot.delete({
+            where: { id: id }
+        });
+
+        return Response.json({ 
+            message: "Parking spot deleted successfully",
+            deleted: deleted
+        }, { status: 200 });
+    } catch (error: any) {
+        console.error("Delete error:", error);
+        return Response.json({ 
+            error: "Failed to delete parking spot",
+            details: error.message 
+        }, { status: 500 });
+    }
 }
 
 export async function UPDATE(req: Request, {params}: {params: {id: string}}) {
